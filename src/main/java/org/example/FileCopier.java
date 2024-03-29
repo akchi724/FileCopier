@@ -6,18 +6,19 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class FileCopier {
+public class FileCopier {
 
-    private final static String iterator = "%iteratori%";
+    private final static String ITERATOR = "%iterator%";
 
     public static void main(String[] args) {
         String sourceFolderPath = "/Users/akchi724/Work/ПВВ/Гостиниц тест/исходники";
         String destinationFolderPath = "/Users/akchi724/Work/ПВВ/Гостиниц тест/копии";
-        int numCopies = 600; // Количество копий для создания
+        int numCopies = 600;
 
         try {
-            for (String path : listFilesAndSubdirectories(sourceFolderPath)) {
-                copyFiles(path, destinationFolderPath, numCopies);
+            List<String> files = listFiles(sourceFolderPath);
+            for (String file : files) {
+                copyFiles(file, destinationFolderPath, numCopies);
             }
             System.out.println("Копии файлов успешно созданы.");
         } catch (IOException e) {
@@ -25,23 +26,24 @@ class FileCopier {
         }
     }
 
-    public static void copyFiles(String sourceFolderPath, String destinationFolderPath, int numCopies) throws IOException {
-        Path sourcePath = Paths.get(sourceFolderPath);
+    public static void copyFiles(String sourceFilePath, String destinationFolderPath, int numCopies) throws IOException {
+        Path sourcePath = Paths.get(sourceFilePath);
         Path destinationPath = Paths.get(destinationFolderPath);
 
+        String fileNameTemplate = getFileNameTemplate(sourcePath);
         for (int i = 1; i <= numCopies; i++) {
-            String fileName = getFileNameTemplate(sourcePath).replace(iterator, Integer.toString(i));
+            String fileName = fileNameTemplate.replace(ITERATOR, Integer.toString(i));
             Path destinationFile = destinationPath.resolve(fileName);
             Files.copy(sourcePath, destinationFile);
         }
     }
 
-    public static List<String> listFilesAndSubdirectories(String directoryPath) throws IOException {
+    public static List<String> listFiles(String directoryPath) throws IOException {
         Path dir = Paths.get(directoryPath);
 
         return Files.walk(dir)
                 .filter(Files::isRegularFile)
-                .map(Path::toString)// Фильтрация только по файлам (можно убрать, чтобы включить и каталоги)
+                .map(Path::toString)
                 .collect(Collectors.toList());
     }
 
@@ -54,6 +56,6 @@ class FileCopier {
             extension = fileName.substring(dotIndex + 1);
             fileName = fileName.substring(0, dotIndex);
         }
-        return fileName + "(" + iterator + ")." + extension;
+        return fileName + "(" + ITERATOR + ")." + extension;
     }
 }
